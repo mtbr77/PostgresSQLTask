@@ -10,6 +10,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,39 +27,39 @@ public class Cell {
     private int mcc;
 
     @CsvBindByName
-    int net;
+    private int net;
 
     @CsvBindByName
-    int area;
+    private int area;
 
     @CsvBindByName
-    int cell;
+    private int cell;
 
     @CsvBindByName
-    int unit;
+    private int unit;
 
     @CsvBindByName
-    double lon;
+    private double lon;
 
     @CsvBindByName
-    double lat;
+    private double lat;
 
     @CsvBindByName
-    int range;
+    private int range;
 
     @CsvBindByName
-    int samples;
+    private int samples;
 
     @CsvBindByName
-    int changeable;
+    private int changeable;
 
     @CsvBindByName
-    int created;
+    private int created;
 
     @CsvBindByName
-    long updated;
+    private long updated;
 
     @CsvBindByName
-    int averageSignal;
+    private int averageSignal;
 
 }
