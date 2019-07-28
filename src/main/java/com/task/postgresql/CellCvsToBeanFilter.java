@@ -1,29 +1,21 @@
 package com.task.postgresql;
 
-import com.opencsv.CSVReader;
 import com.opencsv.bean.CsvToBeanFilter;
-import com.opencsv.bean.HeaderColumnNameTranslateMappingStrategy;
-import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
+import com.opencsv.bean.MappingStrategy;
 import com.task.postgresql.filters.Filter;
 import com.task.postgresql.filters.FiltersService;
 import com.task.postgresql.model.Cell;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 
 public class CellCvsToBeanFilter implements CsvToBeanFilter {
-    private final HeaderColumnNameTranslateMappingStrategy<Cell> strategy = new HeaderColumnNameTranslateMappingStrategy<>();
+    private MappingStrategy<Cell> strategy = null;
 
-    public CellCvsToBeanFilter(CSVReader reader) throws IOException {
-        try {
-            strategy.captureHeader(reader);
-        } catch (CsvRequiredFieldEmptyException e) {
-            e.printStackTrace();
-        }
+    public CellCvsToBeanFilter(MappingStrategy<Cell> strategy) throws IOException {
+        this.strategy = strategy;
     }
 
-    @Autowired
-    private FiltersService filtersService;
+    private FiltersService filtersService = new FiltersService();
 
     public boolean allowLine(String[] line) {
         for(Filter filter : filtersService.getFilters().values()) {
