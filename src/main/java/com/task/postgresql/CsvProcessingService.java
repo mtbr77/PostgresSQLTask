@@ -18,11 +18,14 @@ import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
+
+import static java.lang.System.out;
 
 @Service
 public class CsvProcessingService {
@@ -39,10 +42,10 @@ public class CsvProcessingService {
     private CsvToBean<Cell> csvToBeanConverter;
 
     @Autowired
-    private CellRepository repo;
+    private CellRepository repository;
     private long lines, storedLines, skippedLines, failedLines;
     private CSVReader reader;
-    private List<Cell> cells;
+    private List<Cell> cells = Collections.emptyList();
 
     public void start() {
         try(Stream<Path> paths = Files.walk(Paths.get(csvDir))){
@@ -62,6 +65,7 @@ public class CsvProcessingService {
 
             saveToDB(cells);
             printDBwriteStatistic();
+            //readFromDB();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -71,7 +75,7 @@ public class CsvProcessingService {
         CsvToBeanBuilder<Cell> builder = new CsvToBeanBuilder(reader).withType(Cell.class).withThrowExceptions(false);
         csvToBeanConverter = builder.build();
         MappingStrategy<Cell> strategy = getMappingStrategy(builder);
-        CellCvsToBeanFilter csvFilter = new CellCvsToBeanFilter(strategy);
+        CvsToBeanFilterImpl csvFilter = new CvsToBeanFilterImpl(strategy);
         csvToBeanConverter.setFilter(csvFilter);
         startTime = System.nanoTime();
         cells = csvToBeanConverter.parse();
@@ -82,16 +86,16 @@ public class CsvProcessingService {
         ExecutorService pool = Executors.newFixedThreadPool(dbwritersAmount);
         startTime = System.nanoTime();
         for(Cell cell : cells) {
-            pool.execute(() -> repo.save(cell));
+            pool.execute(() -> repository.save(cell));
         }
         elapsedTime = System.nanoTime() - startTime;
         pool.shutdown();
     }
 
     private void printDBwriteStatistic() {
-        System.out.println("elapsed time of saving to DB = " + elapsedTime/1_000_000_000.0 + " sec");
-        System.out.println("records/sec inserted in DB = " + (long)(storedLines * (1_000_000_000.0/elapsedTime)));
-        System.out.println("**************************************************************");
+        out.println("elapsed time of saving to DB = " + elapsedTime/1_000_000_000.0 + " sec");
+        out.println("records/sec inserted in DB = " + (long)(storedLines * (1_000_000_000.0/elapsedTime)));
+        out.println("**************************************************************");
     }
 
     private void printLinesStatistic() {
@@ -99,13 +103,20 @@ public class CsvProcessingService {
         storedLines = cells.size();
         skippedLines = lines - storedLines;
         failedLines = csvToBeanConverter.getCapturedExceptions().size();
-        System.out.println("*************************STATISTIC****************************");
-        System.out.println("lines/sec processed = " + (long)(lines *(1_000_000_000.0/elapsedTime)));
-        System.out.println("All lines = " + lines);
-        System.out.println("failed lines = " + failedLines);
-        System.out.println("skipped (not in filter) lines = " + skippedLines);
-        System.out.println("lines in filter = " + storedLines);
+        out.println("*************************STATISTIC****************************");
+        out.println("lines/sec processed = " + (long)(lines *(1_000_000_000.0/elapsedTime)));
+        out.println("All lines = " + lines);
+        out.println("failed lines = " + failedLines);
+        out.println("skipped (not in filter) lines = " + skippedLines);
+        out.println("lines in filter = " + storedLines);
     }
+
+    private void readFromDB() {
+        for (Cell cell : repository.findByLon(55)) {
+            out.println(cell.toString());
+        }
+    }
+
 
     private MappingStrategy<Cell> getMappingStrategy(CsvToBeanBuilder<Cell> builder){
         MappingStrategy<Cell> strategy = null;

@@ -7,7 +7,7 @@ BEGIN
   ELSIF ( NEW.lon >= 55 ) THEN INSERT INTO cell_2 VALUES (NEW.*);
   ELSE RAISE EXCEPTION ''Date out of range.  Fix the measurement_insert_trigger() function!'';
   END IF;
-  RETURN NEW;
+  RETURN NULL;
 END;
 ' LANGUAGE plpgsql;
 

@@ -8,10 +8,10 @@ import com.task.postgresql.model.Cell;
 
 import java.io.IOException;
 
-public class CellCvsToBeanFilter implements CsvToBeanFilter {
+public class CvsToBeanFilterImpl implements CsvToBeanFilter {
     private MappingStrategy<Cell> strategy = null;
 
-    public CellCvsToBeanFilter(MappingStrategy<Cell> strategy) throws IOException {
+    public CvsToBeanFilterImpl(MappingStrategy<Cell> strategy) throws IOException {
         this.strategy = strategy;
     }
 
